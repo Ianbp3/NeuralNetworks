@@ -21,7 +21,6 @@ class MnistDataset:
             self.images = data.reshape(num_images, rows*cols)
             self.images = (self.images > 128).astype(int)
 
-            print(self.images[0])
 
         # Load labels
         with open(labels_filename, 'rb') as f:
@@ -31,3 +30,25 @@ class MnistDataset:
                 raise ValueError(f"Invalid magic number {magic}. Expected 2049 for labels.")
 
             self.labels = np.frombuffer(f.read(), dtype=np.uint8)
+            self.onehotlabels = []
+            for label in self.labels:
+                if label == 0:
+                    self.onehotlabels.append([1,0,0,0,0,0,0,0,0,0])
+                if label == 1:
+                    self.onehotlabels.append([0,1,0,0,0,0,0,0,0,0])
+                if label == 2:
+                    self.onehotlabels.append([0,0,1,0,0,0,0,0,0,0])
+                if label == 3:
+                    self.onehotlabels.append([0,0,0,1,0,0,0,0,0,0])
+                if label == 4:
+                    self.onehotlabels.append([0,0,0,0,1,0,0,0,0,0])
+                if label == 5:
+                    self.onehotlabels.append([0,0,0,0,0,1,0,0,0,0])
+                if label == 6:
+                    self.onehotlabels.append([0,0,0,0,0,0,1,0,0,0])
+                if label == 7:
+                    self.onehotlabels.append([0,0,0,0,0,0,0,1,0,0])
+                if label == 8:
+                    self.onehotlabels.append([0,0,0,0,0,0,0,0,1,0])
+                if label == 9:
+                    self.onehotlabels.append([0,0,0,0,0,0,0,0,0,1])
