@@ -1,5 +1,6 @@
 import DenseLayer as dl
 import ActivationFunc as af
+import LossFunc as lf
 import MnistDataset as MnistDs
 from pathlib import Path
 
@@ -27,14 +28,18 @@ outputlayer = dl.DenseLayer(128, 10)
 relu = af.ReLU()
 softmax = af.Softmax()
 
-layer.forward(mnist_train.images[0])
+layer.forward([mnist_train.images[0],mnist_train.images[1],mnist_train.images[2]])
 relu.forward(layer.outputs)
 outputlayer.forward(relu.output)
+print(outputlayer.outputs)
 softmax.forward(outputlayer.outputs)
-print(softmax.output)
+print(softmax.outputs)
+cross_ent = lf.CrossEntropy()
+cross_ent.forward([mnist_train.onehotlabels[0], mnist_train.onehotlabels[1], mnist_train.onehotlabels[2]], softmax.outputs)
+print("Loss: ", cross_ent.outputs)
 
 total = 0
-for x in softmax.output[0]:
+for x in softmax.outputs[1]:
     total += x
 
 print("Percentage Total: ", total)

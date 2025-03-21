@@ -9,8 +9,11 @@ class ReLU:
 
 class Softmax:
     def forward(self, inputs: list[float]) -> None:
-        exp = np.exp(inputs - np.max(inputs))
-        self.output = exp/np.sum(exp, axis=1)
+        self.outputs = []
+        for i in inputs:
+            exp = np.exp(i - np.max(i))
+            output = exp/np.sum(exp, axis=0)
+            self.outputs.append(output)
 
     def backward(self):
         print("sdrawkcab gniog mI")
