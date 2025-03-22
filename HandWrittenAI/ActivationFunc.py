@@ -4,8 +4,9 @@ class ReLU:
     def forward(self, inputs: list[float]) -> None:
         self.output = np.maximum(0, inputs)
 
-    def backward(self):
-        print("sdrawkcab gniog mI")
+    def backward(self, dvalues, inputs):
+        self.drelu = dvalues.copy()
+        self.drelu[inputs <= 0] = 0
 
 class Softmax:
     def forward(self, inputs: list[float]) -> None:
@@ -15,8 +16,8 @@ class Softmax:
             output = exp/np.sum(exp, axis=0)
             self.outputs.append(output)
 
-    def backward(self):
-        print("sdrawkcab gniog mI")
+    def backward(self, dvalues):
+        self.dsoftmax = dvalues
 
     def accuracy(self, y_real):
         count = 0

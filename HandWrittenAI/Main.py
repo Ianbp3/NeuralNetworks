@@ -28,11 +28,32 @@ outputlayer = dl.DenseLayer(128, 10)
 relu = af.ReLU()
 softmax = af.Softmax()
 
+#Training ---------------------------------------------------------------------------------
+batches_size = 64
+
+#Forward-----------------------------------------------------------------------------------
 layer.forward([mnist_train.images[0],mnist_train.images[1],mnist_train.images[2]])
 relu.forward(layer.outputs)
 outputlayer.forward(relu.output)
 softmax.forward(outputlayer.outputs)
+
+#Loss and Accuracy Calculations ------------------------------------------------------------
 cross_ent = lf.CrossEntropy()
 cross_ent.forward([mnist_train.onehotlabels[0], mnist_train.onehotlabels[1], mnist_train.onehotlabels[2]], softmax.outputs)
-print("Loss: ", cross_ent.outputs)
+print("Loss: ", cross_ent.loss_mean)
 print("Accuracy: ", softmax.accuracy([mnist_train.onehotlabels[0], mnist_train.onehotlabels[1], mnist_train.onehotlabels[2]]))
+
+#Backward Propagation ----------------------------------------------------------------------------------
+cross_ent.gradient()
+dvalues_out = cross_ent.grad
+
+outputlayer.backward(dvalues_out, relu.output)
+
+relu.backward(outputlayer.dinputs, layer.outputs)
+dvalues1 = relu.drelu
+
+layer.backward(dvalues1, [mnist_train.images[0],mnist_train.images[1],mnist_train.images[2]])
+
+#Update Weights and Biases ---------------------------------------------------------------------------
+layer.update()
+outputlayer.update()
