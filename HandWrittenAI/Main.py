@@ -30,30 +30,38 @@ softmax = af.Softmax()
 
 #Training ---------------------------------------------------------------------------------
 batches_size = 64
+Epochs = 20
+l_range = 0
+h_range = 64
+Loss_history = []
+Acc_history = []
+for i in range(Epochs):
+    inputs = mnist_train.images[l_range+i*batches_size:h_range+i*batches_size]
+    labels = mnist_train.onehotlabels[l_range+i*batches_size:h_range+i*batches_size]
+    #Forward-----------------------------------------------------------------------------------
+    layer.forward(inputs)
+    relu.forward(layer.outputs)
+    outputlayer.forward(relu.output)
+    softmax.forward(outputlayer.outputs)
 
-#Forward-----------------------------------------------------------------------------------
-layer.forward([mnist_train.images[0],mnist_train.images[1],mnist_train.images[2]])
-relu.forward(layer.outputs)
-outputlayer.forward(relu.output)
-softmax.forward(outputlayer.outputs)
+    #Loss and Accuracy Calculations ------------------------------------------------------------
+    cross_ent = lf.CrossEntropy()
+    cross_ent.forward(labels, softmax.outputs)
+    Loss_history.append(cross_ent.loss_mean)
+    acc = softmax.accuracy(labels)
+    Acc_history.append(acc)
 
-#Loss and Accuracy Calculations ------------------------------------------------------------
-cross_ent = lf.CrossEntropy()
-cross_ent.forward([mnist_train.onehotlabels[0], mnist_train.onehotlabels[1], mnist_train.onehotlabels[2]], softmax.outputs)
-print("Loss: ", cross_ent.loss_mean)
-print("Accuracy: ", softmax.accuracy([mnist_train.onehotlabels[0], mnist_train.onehotlabels[1], mnist_train.onehotlabels[2]]))
+    #Backward Propagation ----------------------------------------------------------------------------------
+    cross_ent.gradient()
+    dvalues_out = cross_ent.grad
 
-#Backward Propagation ----------------------------------------------------------------------------------
-cross_ent.gradient()
-dvalues_out = cross_ent.grad
+    outputlayer.backward(dvalues_out, relu.output)
 
-outputlayer.backward(dvalues_out, relu.output)
+    relu.backward(outputlayer.dinputs, layer.outputs)
+    dvalues1 = relu.drelu
 
-relu.backward(outputlayer.dinputs, layer.outputs)
-dvalues1 = relu.drelu
+    layer.backward(dvalues1, inputs)
 
-layer.backward(dvalues1, [mnist_train.images[0],mnist_train.images[1],mnist_train.images[2]])
-
-#Update Weights and Biases ---------------------------------------------------------------------------
-layer.update()
-outputlayer.update()
+    #Update Weights and Biases ---------------------------------------------------------------------------
+    layer.update()
+    outputlayer.update()
