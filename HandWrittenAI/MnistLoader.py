@@ -47,10 +47,10 @@ test_labels_path = ds_folder_path / "t10k-labels-idx1-ubyte"
 train_images_path = ds_folder_path / "train-images-idx3-ubyte"
 train_labels_path = ds_folder_path / "train-labels-idx1-ubyte"
 
-#mnist_test = MnistDs.MnistDataset()
+mnist_test = MnistDs.MnistDataset()
 mnist_train = MnistDs.MnistDataset()
 
-#mnist_test.load(test_images_path, test_labels_path)
+mnist_test.load(test_images_path, test_labels_path)
 mnist_train.load(train_images_path, train_labels_path)
 
 print(mnist_train.images.shape)

@@ -24,5 +24,4 @@ class Softmax:
         for i in range(len(y_real)):
             if (y_real[i].index(1) == list(self.outputs[i]).index(max(self.outputs[i]))):
                 count += 1
-
         return count/len(y_real)

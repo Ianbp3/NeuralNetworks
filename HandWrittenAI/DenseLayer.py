@@ -1,5 +1,5 @@
 import numpy as np
-
+import pickle
 class DenseLayer:
     def __init__(self, n_inputs: int, n_neurons: int, lambda_l2=0) -> None:
         self.weights = np.random.randn(n_inputs,n_neurons) * 0.01
@@ -26,3 +26,14 @@ class DenseLayer:
 
     def get_l2_loss(self):
         return self.l2_lambda * np.sum(self.weights ** 2)
+
+    def save(self, filename):
+        with open(filename, 'wb') as f:
+            pickle.dump({'weights': self.weights, 'biases': self.biases}, f)
+
+    # Load weights and biases
+    def load(self, filename):
+        with open(filename, 'rb') as f:
+            data = pickle.load(f)
+            self.weights = data['weights']
+            self.biases = data['biases']

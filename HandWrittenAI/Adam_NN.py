@@ -32,7 +32,7 @@ softmax = af.Softmax()
 
 #Training ---------------------------------------------------------------------------------
 batches_size = 64
-Epochs = 100
+Epochs = 500
 l_range = 0
 h_range = 64
 Loss_history = []
@@ -70,6 +70,8 @@ for i in range(Epochs):
     adam.update(layer)
     adam.update(outputlayer)
 
+layer.save("layer_Adam.pkl")
+outputlayer.save("out_layer_Adam.pkl")
 
 plts.loss_epochs(Loss_history, Epochs)
 plts.accu_epochs(Acc_history, Epochs)

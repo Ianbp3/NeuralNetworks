@@ -31,7 +31,7 @@ softmax = af.Softmax()
 
 #Training ---------------------------------------------------------------------------------
 batches_size = 64
-Epochs = 100
+Epochs = 500
 l_range = 0
 h_range = 64
 Loss_history = []
@@ -66,6 +66,9 @@ for i in range(Epochs):
     #Update Weights and Biases ---------------------------------------------------------------------------
     layer.update()
     outputlayer.update()
+
+layer.save("layer_Basic.pkl")
+outputlayer.save("out_layer_Basic.pkl")
 
 plts.loss_epochs(Loss_history, Epochs)
 plts.accu_epochs(Acc_history, Epochs)
