@@ -25,52 +25,57 @@ mnist_train = MnistDs.MnistDataset()
 mnist_train.load(train_images_path, train_labels_path)
 
 #NeuralNetwork Creation -------------------------------------------------------------------
-layer = dl.DenseLayer(len(mnist_train.images[0]), 128, lambda_l2=0.0001)
-outputlayer = dl.DenseLayer(128, 10, lambda_l2=0.0001)
+layer = dl.DenseLayer(len(mnist_train.images[0]), 128, lambda_l2=0.00001)
+outputlayer = dl.DenseLayer(128, 10, lambda_l2=0.00001)
 relu = af.ReLU()
 softmax = af.Softmax()
 
 #Training ---------------------------------------------------------------------------------
 batches_size = 64
-Epochs = 500
+Epochs = 20
 l_range = 0
 h_range = 64
 Loss_history = []
 Acc_history = []
+loss_f = 0
+accu_f = 0
 adam = opt.AdamOptimizer(learning_rate=0.01)
 
 for i in range(Epochs):
-    inputs = mnist_train.images[l_range+i*batches_size:h_range+i*batches_size]
-    labels = mnist_train.onehotlabels[l_range+i*batches_size:h_range+i*batches_size]
-    #Forward-----------------------------------------------------------------------------------
-    layer.forward(inputs)
-    relu.forward(layer.outputs)
-    outputlayer.forward(relu.output)
-    softmax.forward(outputlayer.outputs)
+    for i in range(930):
+        inputs = mnist_train.images[l_range+i*batches_size:h_range+i*batches_size]
+        labels = mnist_train.onehotlabels[l_range+i*batches_size:h_range+i*batches_size]
+        #Forward-----------------------------------------------------------------------------------
+        layer.forward(inputs)
+        relu.forward(layer.outputs)
+        outputlayer.forward(relu.output)
+        softmax.forward(outputlayer.outputs)
 
-    #Loss and Accuracy Calculations ------------------------------------------------------------
-    cross_ent = lf.CrossEntropy()
-    cross_ent.forward(labels, softmax.outputs)
-    loss = cross_ent.loss_mean
-    regloss = layer.get_l2_loss() + outputlayer.get_l2_loss()
-    Loss_history.append(loss+regloss)
-    acc = softmax.accuracy(labels)
-    Acc_history.append(acc)
+        #Loss and Accuracy Calculations ------------------------------------------------------------
+        cross_ent = lf.CrossEntropy()
+        cross_ent.forward(labels, softmax.outputs)
+        loss = cross_ent.loss_mean
+        regloss = layer.get_l2_loss() + outputlayer.get_l2_loss()
+        loss_f = loss+regloss
+        accu_f = softmax.accuracy(labels)
 
-    #Backward Propagation ----------------------------------------------------------------------------------
-    cross_ent.gradient()
-    dvalues_out = cross_ent.grad
+        #Backward Propagation ----------------------------------------------------------------------------------
+        cross_ent.gradient()
+        dvalues_out = cross_ent.grad
 
-    outputlayer.backward(dvalues_out, relu.output)
+        outputlayer.backward(dvalues_out, relu.output)
 
-    relu.backward(outputlayer.dinputs, layer.outputs)
-    dvalues1 = relu.drelu
+        relu.backward(outputlayer.dinputs, layer.outputs)
+        dvalues1 = relu.drelu
 
-    layer.backward(dvalues1, inputs)
+        layer.backward(dvalues1, inputs)
 
-    #Update Weights and Biases ---------------------------------------------------------------------------
-    adam.update(layer)
-    adam.update(outputlayer)
+        #Update Weights and Biases ---------------------------------------------------------------------------
+        adam.update(layer)
+        adam.update(outputlayer)
+
+    Loss_history.append(loss_f)
+    Acc_history.append(accu_f)
 
 layer.save("layer_L2.pkl")
 outputlayer.save("out_layer_L2.pkl")

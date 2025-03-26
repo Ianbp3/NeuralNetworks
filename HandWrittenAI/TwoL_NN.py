@@ -33,50 +33,56 @@ softmax = af.Softmax()
 
 #Training ---------------------------------------------------------------------------------
 batches_size = 64
-Epochs = 300
+Epochs = 20
 l_range = 0
 h_range = 64
 Loss_history = []
 Acc_history = []
+loss_f = 0
+accu_f = 0
+
 for i in range(Epochs):
-    inputs = mnist_train.images[l_range+i*batches_size:h_range+i*batches_size]
-    labels = mnist_train.onehotlabels[l_range+i*batches_size:h_range+i*batches_size]
-    #Forward-----------------------------------------------------------------------------------
-    layer.forward(inputs)
-    relu.forward(layer.outputs)
+    for i in range(930):
+        inputs = mnist_train.images[l_range+i*batches_size:h_range+i*batches_size]
+        labels = mnist_train.onehotlabels[l_range+i*batches_size:h_range+i*batches_size]
+        #Forward-----------------------------------------------------------------------------------
+        layer.forward(inputs)
+        relu.forward(layer.outputs)
 
-    layer2.forward(relu.output)
-    relu2.forward(layer2.outputs)
+        layer2.forward(relu.output)
+        relu2.forward(layer2.outputs)
 
-    outputlayer.forward(relu2.output)
-    softmax.forward(outputlayer.outputs)
+        outputlayer.forward(relu2.output)
+        softmax.forward(outputlayer.outputs)
 
-    #Loss and Accuracy Calculations ------------------------------------------------------------
-    cross_ent = lf.CrossEntropy()
-    cross_ent.forward(labels, softmax.outputs)
-    Loss_history.append(cross_ent.loss_mean)
-    acc = softmax.accuracy(labels)
-    Acc_history.append(acc)
+        #Loss and Accuracy Calculations ------------------------------------------------------------
+        cross_ent = lf.CrossEntropy()
+        cross_ent.forward(labels, softmax.outputs)
+        loss_f = cross_ent.loss_mean
+        accu_f = softmax.accuracy(labels)
 
-    #Backward Propagation ----------------------------------------------------------------------------------
-    cross_ent.gradient()
-    dvalues_out = cross_ent.grad
+        #Backward Propagation ----------------------------------------------------------------------------------
+        cross_ent.gradient()
+        dvalues_out = cross_ent.grad
 
-    outputlayer.backward(dvalues_out, relu2.output)
+        outputlayer.backward(dvalues_out, relu2.output)
 
-    relu2.backward(outputlayer.dinputs, layer2.outputs)
-    dvalues2 = relu2.drelu
-    layer2.backward(dvalues2, relu.output)
+        relu2.backward(outputlayer.dinputs, layer2.outputs)
+        dvalues2 = relu2.drelu
+        layer2.backward(dvalues2, relu.output)
 
-    relu.backward(layer2.dinputs, layer.outputs)
-    dvalues1 = relu.drelu
+        relu.backward(layer2.dinputs, layer.outputs)
+        dvalues1 = relu.drelu
 
-    layer.backward(dvalues1, inputs)
+        layer.backward(dvalues1, inputs)
 
-    #Update Weights and Biases ---------------------------------------------------------------------------
-    layer.update()
-    layer2.update()
-    outputlayer.update()
+        #Update Weights and Biases ---------------------------------------------------------------------------
+        layer.update()
+        layer2.update()
+        outputlayer.update()
+
+    Loss_history.append(loss_f)
+    Acc_history.append(accu_f)
 
 plts.loss_epochs(Loss_history, Epochs)
 plts.accu_epochs(Acc_history, Epochs)

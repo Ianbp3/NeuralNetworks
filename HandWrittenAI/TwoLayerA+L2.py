@@ -3,6 +3,7 @@ import ActivationFunc as af
 import LossFunc as lf
 import MnistDataset as MnistDs
 import PlotFuncs as plts
+import Optimizers as opt
 from pathlib import Path
 
 #Importing data: Images and Labels ---------------------------------------------------------
@@ -24,20 +25,23 @@ mnist_train = MnistDs.MnistDataset()
 mnist_train.load(train_images_path, train_labels_path)
 
 #NeuralNetwork Creation -------------------------------------------------------------------
-layer = dl.DenseLayer(len(mnist_train.images[0]), 128)
-outputlayer = dl.DenseLayer(128, 10)
+layer = dl.DenseLayer(len(mnist_train.images[0]), 128, lambda_l2=0.00001)
+layer2 = dl.DenseLayer(128, 128, lambda_l2=0.00001)
+outputlayer = dl.DenseLayer(128, 10, lambda_l2=0.00001)
 relu = af.ReLU()
+relu2 = af.ReLU()
 softmax = af.Softmax()
 
 #Training ---------------------------------------------------------------------------------
 batches_size = 64
-Epochs = 20
+Epochs = 40
 l_range = 0
 h_range = 64
 Loss_history = []
 Acc_history = []
 loss_f = 0
 accu_f = 0
+adam = opt.AdamOptimizer(learning_rate=0.01)
 
 for i in range(Epochs):
     for i in range(930):
@@ -46,13 +50,17 @@ for i in range(Epochs):
         #Forward-----------------------------------------------------------------------------------
         layer.forward(inputs)
         relu.forward(layer.outputs)
-        outputlayer.forward(relu.output)
+        layer2.forward(relu.output)
+        relu2.forward(layer2.outputs)
+        outputlayer.forward(relu2.output)
         softmax.forward(outputlayer.outputs)
 
         #Loss and Accuracy Calculations ------------------------------------------------------------
         cross_ent = lf.CrossEntropy()
         cross_ent.forward(labels, softmax.outputs)
-        loss_f = cross_ent.loss_mean
+        loss = cross_ent.loss_mean
+        regloss = layer.get_l2_loss() + outputlayer.get_l2_loss()
+        loss_f = loss+regloss
         accu_f = softmax.accuracy(labels)
 
         #Backward Propagation ----------------------------------------------------------------------------------
@@ -61,20 +69,25 @@ for i in range(Epochs):
 
         outputlayer.backward(dvalues_out, relu.output)
 
-        relu.backward(outputlayer.dinputs, layer.outputs)
+        relu2.backward(outputlayer.dinputs, layer2.outputs)
+        layer2.backward(relu2.drelu, relu.output)
+
+        relu.backward(layer2.dinputs, layer.outputs)
         dvalues1 = relu.drelu
 
         layer.backward(dvalues1, inputs)
 
         #Update Weights and Biases ---------------------------------------------------------------------------
-        layer.update()
-        outputlayer.update()
+        adam.update(layer)
+        adam.update(layer2)
+        adam.update(outputlayer)
 
     Loss_history.append(loss_f)
     Acc_history.append(accu_f)
 
-layer.save("layer_Basic.pkl")
-outputlayer.save("out_layer_Basic.pkl")
+layer.save("2layer_AdamL2.pkl")
+layer2.save("2Layer2_AdamL2.pkl")
+outputlayer.save("out_layer_AdamL2.pkl")
 
 plts.loss_epochs(Loss_history, Epochs)
 plts.accu_epochs(Acc_history, Epochs)

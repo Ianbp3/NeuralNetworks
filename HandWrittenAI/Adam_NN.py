@@ -32,43 +32,48 @@ softmax = af.Softmax()
 
 #Training ---------------------------------------------------------------------------------
 batches_size = 64
-Epochs = 500
+Epochs = 20
 l_range = 0
 h_range = 64
 Loss_history = []
 Acc_history = []
+loss_f = 0
+accu_f = 0
 adam = opt.AdamOptimizer(learning_rate=0.01)
 
 for i in range(Epochs):
-    inputs = mnist_train.images[l_range+i*batches_size:h_range+i*batches_size]
-    labels = mnist_train.onehotlabels[l_range+i*batches_size:h_range+i*batches_size]
-    #Forward-----------------------------------------------------------------------------------
-    layer.forward(inputs)
-    relu.forward(layer.outputs)
-    outputlayer.forward(relu.output)
-    softmax.forward(outputlayer.outputs)
+    for i in range(930):
+        inputs = mnist_train.images[l_range+i*batches_size:h_range+i*batches_size]
+        labels = mnist_train.onehotlabels[l_range+i*batches_size:h_range+i*batches_size]
+        #Forward-----------------------------------------------------------------------------------
+        layer.forward(inputs)
+        relu.forward(layer.outputs)
+        outputlayer.forward(relu.output)
+        softmax.forward(outputlayer.outputs)
 
-    #Loss and Accuracy Calculations ------------------------------------------------------------
-    cross_ent = lf.CrossEntropy()
-    cross_ent.forward(labels, softmax.outputs)
-    Loss_history.append(cross_ent.loss_mean)
-    acc = softmax.accuracy(labels)
-    Acc_history.append(acc)
+        #Loss and Accuracy Calculations ------------------------------------------------------------
+        cross_ent = lf.CrossEntropy()
+        cross_ent.forward(labels, softmax.outputs)
+        loss_f = cross_ent.loss_mean
+        accu_f = softmax.accuracy(labels)
 
-    #Backward Propagation ----------------------------------------------------------------------------------
-    cross_ent.gradient()
-    dvalues_out = cross_ent.grad
+        #Backward Propagation ----------------------------------------------------------------------------------
+        cross_ent.gradient()
+        dvalues_out = cross_ent.grad
 
-    outputlayer.backward(dvalues_out, relu.output)
+        outputlayer.backward(dvalues_out, relu.output)
 
-    relu.backward(outputlayer.dinputs, layer.outputs)
-    dvalues1 = relu.drelu
+        relu.backward(outputlayer.dinputs, layer.outputs)
+        dvalues1 = relu.drelu
 
-    layer.backward(dvalues1, inputs)
+        layer.backward(dvalues1, inputs)
 
-    #Update Weights and Biases ---------------------------------------------------------------------------
-    adam.update(layer)
-    adam.update(outputlayer)
+        #Update Weights and Biases ---------------------------------------------------------------------------
+        adam.update(layer)
+        adam.update(outputlayer)
+
+    Loss_history.append(loss_f)
+    Acc_history.append(accu_f)
 
 layer.save("layer_Adam.pkl")
 outputlayer.save("out_layer_Adam.pkl")

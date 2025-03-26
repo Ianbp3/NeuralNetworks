@@ -25,6 +25,13 @@ outputlayer_Basic = dl.DenseLayer(128, 10)
 relu_Basic = af.ReLU()
 softmax_Basic = af.Softmax()
 
+T_layer_AdamL2 = dl.DenseLayer(784, 128)
+T_layer2_AdamL2 = dl.DenseLayer(128, 128)
+T_outputlayer_AdamL2 = dl.DenseLayer(128, 10)
+T_relu_AdamL2 = af.ReLU()
+T_relu2_AdamL2 = af.ReLU()
+T_softmax_AdamL2 = af.Softmax()
+
 # Load saved weights -------------------------------------------------
 layer_Adam.load("layer_Adam.pkl")
 outputlayer_Adam.load("out_layer_Adam.pkl")
@@ -34,6 +41,10 @@ outputlayer_L2.load("out_layer_L2.pkl")
 
 layer_Basic.load("layer_Basic.pkl")
 outputlayer_Basic.load("out_layer_Basic.pkl")
+
+T_layer_AdamL2.load("2layer_AdamL2.pkl")
+T_layer2_AdamL2.load("2layer2_AdamL2.pkl")
+T_outputlayer_AdamL2.load("out_layer_AdamL2.pkl")
 # Testing forward pass ----------------------------------------------
 layer_Adam.forward(mnist_test.images)
 relu_Adam.forward(layer_Adam.outputs)
@@ -63,3 +74,15 @@ softmax_Basic.forward(outputlayer_Basic.outputs)
 # Accuracy ----------------------------------------------------------
 acc = softmax_Basic.accuracy(mnist_test.onehotlabels)
 print(f"Test Basic Accuracy: {acc * 100:.2f}%")
+
+# Testing forward pass ----------------------------------------------
+T_layer_AdamL2.forward(mnist_test.images)
+T_relu_AdamL2.forward(T_layer_AdamL2.outputs)
+T_layer2_AdamL2.forward(T_relu_AdamL2.output)
+T_relu2_AdamL2.forward(T_layer2_AdamL2.outputs)
+T_outputlayer_AdamL2.forward(T_relu2_AdamL2.output)
+T_softmax_AdamL2.forward(T_outputlayer_AdamL2.outputs)
+
+# Accuracy ----------------------------------------------------------
+acc = T_softmax_AdamL2.accuracy(mnist_test.onehotlabels)
+print(f"Test Two_Layer Adam + L2 Accuracy: {acc * 100:.2f}%")
