@@ -34,7 +34,7 @@ softmax = af.Softmax()
 
 #Training ---------------------------------------------------------------------------------
 batches_size = 64
-Epochs = 40
+Epochs = 20
 l_range = 0
 h_range = 64
 Loss_history = []
@@ -59,7 +59,7 @@ for i in range(Epochs):
         cross_ent = lf.CrossEntropy()
         cross_ent.forward(labels, softmax.outputs)
         loss = cross_ent.loss_mean
-        regloss = layer.get_l2_loss() + outputlayer.get_l2_loss()
+        regloss = layer.get_l2_loss() + layer2.get_l2_loss() + outputlayer.get_l2_loss()
         loss_f = loss+regloss
         accu_f = softmax.accuracy(labels)
 
